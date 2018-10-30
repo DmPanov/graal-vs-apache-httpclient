@@ -1,9 +1,5 @@
-import com.palantir.gradle.docker.DockerRunPlugin
-
 plugins {
     id("java")
-    id("com.palantir.docker") version "0.20.1"
-    id("com.palantir.docker-run") version "0.20.1"
 }
 
 repositories {
@@ -16,23 +12,8 @@ dependencies {
     compileOnly("com.oracle.substratevm:svm:GraalVM-1.0.0-rc8")
 }
 
-val nativeImageBuildContainer = "${project.name}-native-image-build-container"
-
-docker {
-    name = nativeImageBuildContainer
-    setDockerfile(file("src/main/resources/Dockerfile"))
-}
-
-dockerRun {
-    name = nativeImageBuildContainer
-    image = nativeImageBuildContainer
-    daemonize = false
-    clean = true
-    volumes(mapOf(tasks.getByName("dockerRun").temporaryDir.absolutePath to "/example"))
-}
-
 tasks {
-    val jar = getByName<Jar>("jar") {
+    withType<Jar> {
         archiveName = "${project.name}.$extension"
         from(configurations.compile.map {
             @Suppress("IMPLICIT_CAST_TO_ANY")
@@ -44,14 +25,11 @@ tasks {
             attributes(mapOf("Main-Class" to "Main"))
         }
     }
-    getByName<Exec>("dockerRun") {
-        dependsOn(jar, getByName("docker"))
-        doFirst {
-            copy {
-                into(temporaryDir)
-                from(jar.archivePath)
-            }
-        }
+    create<Exec>("run") {
+        commandLine("docker", "run", "--rm",
+                "--volume", "${projectDir.absolutePath}:${projectDir.absolutePath}",
+                "--workdir", projectDir.absolutePath,
+                "ubuntu:latest", "./run.sh")
     }
     withType<Wrapper> {
         gradleVersion = "4.8"
