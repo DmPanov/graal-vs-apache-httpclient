@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 GRAAL_VERSION=$1
-yum install -y build-essential zlib1g-dev maven
+yum install -y maven
 ln -sf /opt/graalvm-ce-${GRAAL_VERSION} /opt/graal
 mvn install:install-file -Dfile=/opt/graal/jre/lib/svm/builder/svm.jar -DgroupId=com.oracle.substratevm -DartifactId=svm -Dversion=GraalVM-${GRAAL_VERSION} -Dpackaging=jar
 export JAVA_HOME=/opt/graal
