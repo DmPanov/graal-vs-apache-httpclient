@@ -7,9 +7,11 @@ repositories {
     mavenLocal()
 }
 
+val graalVersion = "1.0.0-rc10"
+
 dependencies {
     compile("org.apache.httpcomponents:httpclient:4.5.2")
-    compileOnly("com.oracle.substratevm:svm:GraalVM-1.0.0-rc8")
+    compileOnly("com.oracle.substratevm:svm:GraalVM-$graalVersion")
 }
 
 tasks {
@@ -29,7 +31,8 @@ tasks {
         commandLine("docker", "run", "--rm",
                 "--volume", "${projectDir.absolutePath}:${projectDir.absolutePath}",
                 "--workdir", projectDir.absolutePath,
-                "ubuntu:latest", "./run.sh")
+                "oracle/graalvm-ce:$graalVersion",
+                "./run.sh", graalVersion)
     }
     withType<Wrapper> {
         gradleVersion = "4.8"
